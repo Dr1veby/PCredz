@@ -34,7 +34,7 @@ from base64 import b64decode
 from threading import Thread
 
 def ShowWelcome():
-    Message = 'Pcredz 1.0.0\nAuthor: Laurent Gaffie\nPlease send bugs/comments/pcaps to: laurent.gaffie@gmail.com\nThis script will extract NTLM (http,ldap,smb,sql,etc), Kerberos,\nFTP, HTTP Basic and credit card data from a given pcap file or from a live interface.\n'
+    Message = '\033[1m\033[34mPcredz 1.0.1 With Verbose Mode Always Enabled and Colours!\033[0m\n\nAuthor: Laurent Gaffie, Edited by Dr1veby\nPlease send bugs/comments/pcaps to: laurent.gaffie@gmail.com\nThis script will extract NTLM (http,ldap,smb,sql,etc), Kerberos,\nFTP, HTTP Basic and credit card data from a given pcap file or from a live interface.\n'
     print Message
 
 parser = argparse.ArgumentParser(description='Pcredz 1.0.0\nAuthor: Laurent Gaffie')
@@ -44,7 +44,6 @@ m_group.add_argument('-d', type=str, dest="dir_path", default=None, help="Pcap d
 m_group.add_argument('-i', type=str, dest="interface", default=None, help="interface for live capture")
 parser.add_argument('-c', action="store_false", dest="activate_cc", default=True, help="deactivate CC number scanning (Can gives false positives!)")
 parser.add_argument('-t', action="store_true", dest="timestamp", help="Include a timestamp in all generated messages (useful for correlation)")
-parser.add_argument('-v', action="store_true", dest="Verbose", help="More verbose.")
 
 options = parser.parse_args()
 
@@ -54,7 +53,6 @@ if options.fname is None and options.dir_path is None and options.interface is N
     exit(-1)
 
 ShowWelcome()
-Verbose = options.Verbose
 fname = options.fname
 dir_path = options.dir_path
 interface = options.interface
@@ -163,7 +161,7 @@ def ParseNTLMHash(data,Challenge):
         UserOffset = struct.unpack('<H',data[40:42])[0]
         User = SSPIStart[UserOffset:UserOffset+UserLen].replace('\x00','')
         writehash = User+"::"+Domain+":"+LMHash+":"+NtHash+":"+Challenge
-        return "NTLMv1 complete hash is: %s\n"%(writehash), User+"::"+Domain
+        return "NTLMv1 complete hash is: %s\n"%("\033[1m\033[33m"+writehash++"\033[0m"), User+"::"+Domain
 
     if NthashLen > 60:
         NtHash = SSPIStart[NthashOffset:NthashOffset+NthashLen].encode("hex").upper()
@@ -174,7 +172,7 @@ def ParseNTLMHash(data,Challenge):
         UserOffset = struct.unpack('<H',data[40:42])[0]
         User = SSPIStart[UserOffset:UserOffset+UserLen].replace('\x00','')
         writehash = User+"::"+Domain+":"+Challenge+":"+NtHash[:32]+":"+NtHash[32:]
-        return "NTLMv2 complete hash is: %s\n"%(writehash),User+"::"+Domain
+        return "NTLMv2 complete hash is: %s\n"%("\033[1m\033[33m"+writehash+"\033[0m"),User+"::"+Domain
     else:
         return False
 
@@ -193,7 +191,7 @@ def ParseMSKerbv5TCP(Data):
                 DomainLen = struct.unpack('<b',Data[154+NameLen+3:154+NameLen+4])[0]
                 Domain = Data[154+NameLen+4:154+NameLen+4+DomainLen]
                 BuildHash = "$krb5pa$23$"+Name+"$"+Domain+"$dummy$"+SwitchHash.encode('hex')
-                return 'MSKerb hash found: %s\n'%(BuildHash),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
+                return 'MSKerb hash found: %s\n'%("\033[1m\033[33m"+BuildHash+"\033[0m"),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
         if Data[44:48] == "\xa2\x36\x04\x34" or Data[44:48] == "\xa2\x35\x04\x33":
             HashLen = struct.unpack('<b',Data[47:48])[0]
             Hash = Data[48:48+HashLen]
@@ -203,7 +201,7 @@ def ParseMSKerbv5TCP(Data):
             DomainLen = struct.unpack('<b',Data[HashLen+97+NameLen+3:HashLen+97+NameLen+4])[0]
             Domain = Data[HashLen+97+NameLen+4:HashLen+97+NameLen+4+DomainLen]
             BuildHash = "$krb5pa$23$"+Name+"$"+Domain+"$dummy$"+SwitchHash.encode('hex')
-            return 'MSKerb hash found: %s\n'%(BuildHash),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
+            return 'MSKerb hash found: %s\n'%("\033[1m\033[33m"+BuildHash+"\033[0m"),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
 
         else:
             Hash = Data[48:100]
@@ -213,7 +211,7 @@ def ParseMSKerbv5TCP(Data):
             DomainLen = struct.unpack('<b',Data[149+NameLen+3:149+NameLen+4])[0]
             Domain = Data[149+NameLen+4:149+NameLen+4+DomainLen]
             BuildHash = "$krb5pa$23$"+Name+"$"+Domain+"$dummy$"+SwitchHash.encode('hex')
-            return 'MSKerb hash found: %s\n'%(BuildHash),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
+            return 'MSKerb hash found: %s\n'%("\033[1m\033[33m"+BuildHash+"\033[0m"),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
     else:
         return False
 
@@ -231,7 +229,7 @@ def ParseMSKerbv5UDP(Data):
                 DomainLen = struct.unpack('<b',Data[145+NameLen+3:145+NameLen+4])[0]
                 Domain = Data[145+NameLen+4:145+NameLen+4+DomainLen]
                 BuildHash = "$krb5pa$23$"+Name+"$"+Domain+"$dummy$"+SwitchHash.encode('hex')
-                return 'MSKerb hash found: %s\n'%(BuildHash),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
+                return 'MSKerb hash found: %s\n'%("\033[1m\033[33m"+BuildHash+"\033[0m"),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
             if HashLen == 53:
                 Hash = Data[44:95]
                 SwitchHash = Hash[16:]+Hash[0:16]
@@ -240,7 +238,7 @@ def ParseMSKerbv5UDP(Data):
                 DomainLen = struct.unpack('<b',Data[144+NameLen+3:144+NameLen+4])[0]
                 Domain = Data[144+NameLen+4:144+NameLen+4+DomainLen]
                 BuildHash = "$krb5pa$23$"+Name+"$"+Domain+"$dummy$"+SwitchHash.encode('hex')
-                return 'MSKerb hash found: %s\n'%(BuildHash),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
+                return 'MSKerb hash found: %s\n'%("\033[1m\033[33m"+BuildHash+"\033[0m"),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
 
         else:
             HashLen = struct.unpack('<b',Data[48:49])[0]
@@ -251,7 +249,7 @@ def ParseMSKerbv5UDP(Data):
             DomainLen = struct.unpack('<b',Data[HashLen+98+NameLen+3:HashLen+98+NameLen+4])[0]
             Domain = Data[HashLen+98+NameLen+4:HashLen+98+NameLen+4+DomainLen]
             BuildHash = "$krb5pa$23$"+Name+"$"+Domain+"$dummy$"+SwitchHash.encode('hex')
-            return 'MSKerb hash found: %s\n'%(BuildHash),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
+            return 'MSKerb hash found: %s\n'%("\033[1m\033[33m"+BuildHash+"\033[0m"),"$krb5pa$23$"+Name+"$"+Domain+"$dummy$"
 
     else:
         return False
@@ -261,10 +259,10 @@ def ParseSNMP(data):
     SNMPVersion = data[4:5]
     if SNMPVersion == "\x00":
         StrLen = struct.unpack('<b',data[6:7])[0]
-        return 'Found SNMPv1 Community string: %s\n'%(data[7:7+StrLen])
+        return "\033[1m\033[31m"+'Found SNMPv1 Community string: %s\n'%(data[7:7+StrLen])+"\033[0m"
     if data[3:5] == "\x01\x01":
         StrLen = struct.unpack('<b',data[6:7])[0]
-        return 'Found SNMPv2 Community string: %s\n'%(data[7:7+StrLen])
+        return "\033[1m\033[31m"+'Found SNMPv2 Community string: %s\n'%(data[7:7+StrLen])+"\033[0m"
 
 
 def ParseSMTP(data):
@@ -275,7 +273,7 @@ def ParseSMTP(data):
             Basestr = b64decode(basic)
             if len(Basestr)>1:
                 if Basestr.decode('ascii'):
-                    return 'SMTP decoded Base64 string: %s\n'%(Basestr)
+                    return "\033[1m\033[32m"+'SMTP decoded Base64 string: %s\n'%(Basestr)+"\033[0m"
         except:
             pass
 
@@ -294,7 +292,7 @@ def ParseMSSQLPlainText(data):
     UsernameLen = PwdOffset-UsernameOffset
     PwdStr = ParseSqlClearTxtPwd(data[8+PwdOffset:8+PwdOffset+PwdLen])
     UserName = data[8+UsernameOffset:8+UsernameOffset+UsernameLen].decode('utf-16le')
-    return "MSSQL Username: %s Password: %s"%(UserName, PwdStr)
+    return "\033[1m\033[32m"+"MSSQL Username: %s Password: %s"%(UserName, PwdStr)+"\033[0m"
 
 def Decode_Ip_Packet(s):
     d={}
@@ -362,7 +360,7 @@ def ParseDataRegex(decoded, SrcPort, DstPort, packet_num):
             CTX1_USR = CTX1_USR[0]
             CTX1_PWD = ParseCTX1Hash(CTX1_PWD[0])
             CTX1_CREDS = CTX1_USR + ':' + CTX1_PWD
-            Message = 'Found CTX1 encoded password: %s\n'%CTX1_CREDS
+            Message = "\033[1m\033[32m"+'Found CTX1 encoded password: %s\n'%CTX1_CREDS+"\033[0m"
             print HeadMessage + '\n' + Message
         except:
             pass
@@ -377,7 +375,7 @@ def ParseDataRegex(decoded, SrcPort, DstPort, packet_num):
         basic = ''.join(Basic64)
         HeadMessage = Print_Packet_Details(decoded,SrcPort,DstPort,packet_num)
         try:
-            Message = 'Found  HTTP Basic authentication: %s\n'%(b64decode(basic))
+            Message = "\033[1m\033[32m"+'Found  HTTP Basic authentication: %s\n'%(b64decode(basic))+"\033[0m"
             if PrintPacket(Filename,Message):
                 l.warning(HeadMessage)
                 l.warning(Message)
@@ -712,11 +710,11 @@ def Run():
                     FileSize = 'File size %.3g Mo'%(os.stat(FilePath).st_size/(1024*1024.0))
                     if Seconds>60:
                         minutes = Seconds/60
-                        Message = '\n%s parsed in: %.3g minutes (%s).\n'%(FilePath, minutes, FileSize)
+                        Message = "\033[1m\033[36m"+'\n%s parsed in: %.3g minutes (%s).\n'%(FilePath, minutes, FileSize)+"\033[0m"
                         print Message
                         l.warning(Message)
                     if Seconds<60:
-                        Message = '\n%s parsed in: %.3g seconds (%s).\n'%(FilePath, Seconds, FileSize)
+                        Message = "\033[1m\033[36m"+'\n%s parsed in: %.3g seconds (%s).\n'%(FilePath, Seconds, FileSize)+"\033[0m"
                         print Message
                         l.warning(Message)
 
@@ -728,11 +726,11 @@ def Run():
             FileSize = 'File size %.3g Mo'%(os.stat(fname).st_size/(1024*1024.0))
             if Seconds>60:
                 minutes = Seconds/60
-                Message = '\n%s parsed in: %.3g minutes (%s).\n'%(fname, minutes, FileSize)
+                Message = "\033[1m\033[36m"+'\n%s parsed in: %.3g minutes (%s).\n'%(fname, minutes, FileSize)+"\033[0m"
                 print Message
                 l.warning(Message)
             if Seconds<60:
-                Message = '\n%s parsed in: %.3g seconds (%s).\n'%(fname, Seconds, FileSize)
+                Message = "\033[1m\033[36m"+'\n%s parsed in: %.3g seconds (%s).\n'%(fname, Seconds, FileSize)+"\033[0m"
                 print Message
                 l.warning(Message)
 
