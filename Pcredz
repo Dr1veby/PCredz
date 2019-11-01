@@ -161,7 +161,7 @@ def ParseNTLMHash(data,Challenge):
         UserOffset = struct.unpack('<H',data[40:42])[0]
         User = SSPIStart[UserOffset:UserOffset+UserLen].replace('\x00','')
         writehash = User+"::"+Domain+":"+LMHash+":"+NtHash+":"+Challenge
-        return "NTLMv1 complete hash is: %s\n"%("\033[1m\033[33m"+writehash++"\033[0m"), User+"::"+Domain
+        return "NTLMv1 complete hash is: %s\n"%("\033[1m\033[33m"+writehash+"\033[0m"), User+"::"+Domain
 
     if NthashLen > 60:
         NtHash = SSPIStart[NthashOffset:NthashOffset+NthashLen].encode("hex").upper()
