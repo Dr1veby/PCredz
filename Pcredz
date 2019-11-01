@@ -82,17 +82,7 @@ else:
    print 'CC number scanning is deactivated\n'
 
 def PrintPacket(Filename,Message):
-    if Verbose == True:
-        return True
-    if os.path.isfile(Filename) == True:
-        with open(Filename,"r") as filestr:
-            if re.search(re.escape(Message), filestr.read()):
-                filestr.close()
-                return False
-            else:
-                return True
-    else:
-        return True
+    return True
 
 def IsCookedPcap(version):
     Cooked = re.search('Linux \"cooked\"', version)
